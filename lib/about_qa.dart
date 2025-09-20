@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import './res/about_qa_data.dart';
+import 'package:go_router/go_router.dart';
 
 class AboutQAPage extends StatefulWidget {
   const AboutQAPage({super.key, required this.title});
@@ -43,6 +44,7 @@ class _AboutQAPageState extends State<AboutQAPage> {
               } catch (e) {
                 debugPrint('调用iOS方法错误: $e');
                 // Navigator.pop(context);
+                context.go('/');
               }
             },
           ),
