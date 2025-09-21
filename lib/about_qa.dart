@@ -44,6 +44,7 @@ class _AboutQAPageState extends State<AboutQAPage> {
               } catch (e) {
                 debugPrint('调用iOS方法错误: $e');
                 // Navigator.pop(context);
+                // ignore: use_build_context_synchronously
                 context.go('/');
               }
             },
