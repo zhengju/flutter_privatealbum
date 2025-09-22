@@ -110,6 +110,13 @@ class MyAppState extends State<MyApp> {
   }
 
   @override
+  void dispose() {
+    print('dispose: mounted = $mounted'); // true
+    super.dispose();
+    print('after dispose: mounted = $mounted'); // false
+  }
+
+  @override
   Widget build(BuildContext context) {
     print("build");
     return MaterialApp.router(
