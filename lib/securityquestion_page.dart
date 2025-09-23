@@ -6,11 +6,13 @@ import 'package:go_router/go_router.dart';
 class SecurityQuestionPage extends StatefulWidget {
   final List<String>? securityQuestions;
   final String? defaultQuestion;
+  final String? defaultAnswer; //上次设置的密保答案
 
   const SecurityQuestionPage({
     super.key,
     this.securityQuestions,
     this.defaultQuestion,
+    this.defaultAnswer,
   });
 
   @override
@@ -45,6 +47,9 @@ class _SecurityQuestionPageState extends State<SecurityQuestionPage> {
   @override
   void initState() {
     super.initState();
+    print("传进来的密保");
+    print(widget.defaultAnswer);
+
     // 如果有默认问题，设置为选中状态
     if (widget.defaultQuestion != null) {
       selectedQuestion = widget.defaultQuestion;
@@ -371,25 +376,41 @@ class _SecurityQuestionPageState extends State<SecurityQuestionPage> {
     // 1. 异步操作开始前检查
     if (!currentContext.mounted) return;
     if (selectedQuestion != null && answer.isNotEmpty) {
-      if (currentContext.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('密保问题设置成功'), backgroundColor: Colors.green),
-        );
-        try {
-          // 调用iOS原生方法
-          final result = await _channel.invokeMethod('dismiss', {
-            'selectedQuestion': selectedQuestion,
-            "answer": answer,
-          });
-          if (kDebugMode) {
-            print('iOS返回结果: $result');
-          }
-        } catch (e) {
-          debugPrint('调用iOS方法错误: $e');
-          if (!currentContext.mounted) return;
-          currentContext.go('/');
-        }
+      if (answer != widget.defaultAnswer) {
+        print(answer);
+        print(widget.defaultAnswer);
+        _showErrorSnackBar('输入的密保答案和设置的不一样');
+        return;
       }
+
+      if (currentContext.mounted) {
+        currentContext.push('/set_password');
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   SnackBar(content: Text('密保问题设置成功'), backgroundColor: Colors.green),
+        // );
+        // try {
+        //   // 调用iOS原生方法
+        //   final result = await _channel.invokeMethod('dismiss', {
+        //     'selectedQuestion': selectedQuestion,
+        //     "answer": answer,
+        //   });
+        //   if (kDebugMode) {
+        //     print('iOS返回结果: $result');
+        //   }
+        // } catch (e) {
+        //   debugPrint('调用iOS方法错误: $e');
+        //   if (!currentContext.mounted) return;
+        //   currentContext.go('/');
+        // }
+      }
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
+      );
     }
   }
 

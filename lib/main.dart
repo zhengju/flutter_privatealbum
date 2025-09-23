@@ -3,6 +3,7 @@ import 'package:flutter_privatealbum/about_us.dart';
 import 'about_qa.dart';
 import 'securityquestion_page.dart';
 import 'draggable_card_page.dart';
+import 'sepassword_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
@@ -46,11 +47,17 @@ final GoRouter _router = GoRouter(
           name: 'security_page',
           builder: (context, state) {
             final extra = state.extra as Map<String, dynamic>?;
+            print(extra?['defaultAnswer'] as String?);
             return SecurityQuestionPage(
               securityQuestions: extra?['securityQuestions'] as List<String>?,
               defaultQuestion: extra?['defaultQuestion'] as String?,
+              defaultAnswer: extra?['defaultAnswer'] as String?,
             );
           },
+        ),
+        GoRoute(
+          path: '/set_password',
+          builder: (context, state) => SetPasswordPage(),
         ),
         GoRoute(
           path: 'draggable_card_page',
@@ -175,13 +182,14 @@ class MyAppState extends State<MyApp> {
 
             // 安全地获取字符串参数
             final defaultQuestion = arguments['defaultQuestion'] as String?;
-
+            final defaultAnswer = arguments['defaultAnswer'] as String?;
             if (securityQuestions != null && securityQuestions.isNotEmpty) {
               _router.go(
                 "/security_page",
                 extra: {
                   'securityQuestions': securityQuestions,
                   'defaultQuestion': defaultQuestion ?? securityQuestions[0],
+                  'defaultAnswer': defaultAnswer,
                 },
               );
             } else {
