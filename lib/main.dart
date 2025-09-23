@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_privatealbum/about_us.dart';
 import 'about_qa.dart';
+import 'securityquestion_page.dart';
+import 'draggable_card_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
@@ -38,9 +40,25 @@ final GoRouter _router = GoRouter(
             key: ValueKey('about_qa_${DateTime.now().millisecondsSinceEpoch}'),
             child: const AboutUsPage(title: "关于我们"),
           ),
-          // builder: (BuildContext context, GoRouterState state) {
-          //   return const AboutUsPage(title: "关于我们");
-          // },
+        ),
+        GoRoute(
+          path: 'security_page',
+          name: 'security_page',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>?;
+            return SecurityQuestionPage(
+              securityQuestions: extra?['securityQuestions'] as List<String>?,
+              defaultQuestion: extra?['defaultQuestion'] as String?,
+            );
+          },
+        ),
+        GoRoute(
+          path: 'draggable_card_page',
+          name: 'draggable_card_page',
+          pageBuilder: (context, state) => NoTransitionPage(
+            key: ValueKey('about_qa_${DateTime.now().millisecondsSinceEpoch}'),
+            child: DraggableCard(),
+          ),
         ),
       ],
     ),
@@ -84,16 +102,12 @@ class MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    print("initState");
     _channel.setMethodCallHandler((call) {
       var method = call.method;
-      print("setMethodCallHandler" + call.method);
-      // 延迟执行路由跳转，确保路由已经初始化
-
+      var arguments = call.arguments;
       Future.delayed(Duration(milliseconds: 100), () {
         if (mounted) {
-          print("delayed");
-          _handleNavigation(method, _pendingArguments);
+          _handleNavigation(method, arguments);
         }
       });
       setState(() {
@@ -129,18 +143,59 @@ class MyAppState extends State<MyApp> {
     );
   }
 
-  void _handleNavigation(String method, Map<String, dynamic>? arguments) {
+  void _handleNavigation(String method, dynamic arguments) {
     switch (method) {
       case 'navigate_to_about_qa':
-        print("navigate_to_about_qa");
         _router.go("/about_qa");
         break;
       case 'navigate_to_about_us':
-        print("navigate_to_about_us");
         _router.go("/about_us");
         break;
-      case 'navigate_to_profile':
-        context.go("/profile");
+      case 'navigate_to_security_page':
+        try {
+          // final arguments = call.arguments;
+
+          if (arguments != null) {
+            print("带参数: ${arguments.toString()}");
+
+            // 安全地获取列表参数
+            final securityQuestionsRaw = arguments['securityQuestions'];
+            List<String>? securityQuestions;
+
+            if (securityQuestionsRaw is List) {
+              try {
+                securityQuestions = securityQuestionsRaw.cast<String>();
+              } catch (e) {
+                print("列表转换失败，尝试过滤: $e");
+                securityQuestions = securityQuestionsRaw
+                    .whereType<String>()
+                    .toList();
+              }
+            }
+
+            // 安全地获取字符串参数
+            final defaultQuestion = arguments['defaultQuestion'] as String?;
+
+            if (securityQuestions != null && securityQuestions.isNotEmpty) {
+              _router.go(
+                "/security_page",
+                extra: {
+                  'securityQuestions': securityQuestions,
+                  'defaultQuestion': defaultQuestion ?? securityQuestions[0],
+                },
+              );
+            } else {
+              print("参数无效，使用默认页面");
+              _router.go("/security_page");
+            }
+          } else {
+            print("不带参数");
+            _router.go("/security_page");
+          }
+        } catch (e) {
+          print("处理参数时发生错误: $e");
+          _router.go("/security_page");
+        }
         break;
       case 'navigate_to_gallery':
         if (arguments != null && arguments['albumId'] != null) {
@@ -187,10 +242,16 @@ class _MyHomePageState extends State<MyHomePage> {
       'route': '/settings',
     },
     {
-      'title': '帮助',
-      'subtitle': '获取帮助和支持',
+      'title': '密保页面',
+      'subtitle': '设置密保',
       'icon': Icons.support,
-      'route': '/help',
+      'route': '/security_page',
+    },
+    {
+      'title': '可拖拽卡片',
+      'subtitle': '手势练习',
+      'icon': Icons.support,
+      'route': '/draggable_card_page',
     },
   ];
 
