@@ -14,6 +14,7 @@ class SecurityQuestionPage extends StatefulWidget {
   });
 
   @override
+  // ignore: library_private_types_in_public_api
   _SecurityQuestionPageState createState() => _SecurityQuestionPageState();
 }
 
@@ -54,51 +55,49 @@ class _SecurityQuestionPageState extends State<SecurityQuestionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false, // 关键：禁止键盘调整布局
-      backgroundColor: Colors.black,
+      // backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () async {
-            final currentContext = context;
+        title: Text("密保问题"),
+        leading: Container(
+          margin: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            // ignore: deprecated_member_use
+            color: Colors.blue.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.blue),
+            onPressed: () async {
+              final currentContext = context;
 
-            // 1. 异步操作开始前检查
-            if (!currentContext.mounted) return;
-
-            try {
-              // 2. 执行异步操作
-              final result = await _channel.invokeMethod('dismiss', {
-                'url': "",
-              });
-
-              // 3. 异步操作完成后检查
+              // 1. 异步操作开始前检查
               if (!currentContext.mounted) return;
 
-              // 4. 处理成功结果
-              if (kDebugMode) {
-                print('iOS返回结果: $result');
+              try {
+                // 2. 执行异步操作
+                final result = await _channel.invokeMethod('dismiss', {
+                  'url': "",
+                });
+
+                // 3. 异步操作完成后检查
+                if (!currentContext.mounted) return;
+
+                // 4. 处理成功结果
+                if (kDebugMode) {
+                  print('iOS返回结果: $result');
+                }
+              } catch (e) {
+                debugPrint('调用iOS方法错误: $e');
+
+                // 5. 错误处理前检查
+                if (!currentContext.mounted) return;
+
+                // 6. 处理错误
+                currentContext.go('/');
               }
-            } catch (e) {
-              debugPrint('调用iOS方法错误: $e');
-
-              // 5. 错误处理前检查
-              if (!currentContext.mounted) return;
-
-              // 6. 处理错误
-              currentContext.go('/');
-            }
-          },
-        ),
-        title: Text(
-          '密保问题',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+            },
           ),
         ),
-        centerTitle: true,
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
